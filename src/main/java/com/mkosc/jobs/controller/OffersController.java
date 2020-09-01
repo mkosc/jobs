@@ -1,7 +1,9 @@
 package com.mkosc.jobs.controller;
 
 import com.mkosc.jobs.domain.JobOffer;
+import com.mkosc.jobs.dto.JobOfferSearchDTO;
 import com.mkosc.jobs.service.OffersService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/offers")
@@ -16,6 +19,9 @@ public class OffersController {
 
     @Autowired
     OffersService offersService;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @GetMapping("/{id}")
     public ResponseEntity<JobOffer> getOfferById(@PathVariable long id) {
@@ -31,9 +37,17 @@ public class OffersController {
     public ResponseEntity<?> getOffersByTitle(@RequestParam(name = "title", required = false) String title,
                                               @RequestParam(name = "companyName", required = false) String companyName) {
         if (title != null) {
-            return new ResponseEntity<>(offersService.getOffersByTitle(title), HttpStatus.OK);
+            List<JobOfferSearchDTO> jobOfferSearchDTOs = offersService.getOffersByTitle(title)
+                    .stream()
+                    .map(offer -> modelMapper.map(offer, JobOfferSearchDTO.class))
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(jobOfferSearchDTOs, HttpStatus.OK);
         } else if (companyName != null) {
-            return new ResponseEntity<>(offersService.getOffersByCompanyName(companyName), HttpStatus.OK);
+            List<JobOfferSearchDTO> jobOfferSearchDTOs = offersService.getOffersByCompanyName(companyName)
+                    .stream()
+                    .map(offer -> modelMapper.map(offer, JobOfferSearchDTO.class))
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(jobOfferSearchDTOs, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
