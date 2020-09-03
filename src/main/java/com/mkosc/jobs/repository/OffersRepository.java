@@ -1,15 +1,15 @@
 package com.mkosc.jobs.repository;
 
 import com.mkosc.jobs.domain.JobOffer;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface OffersRepository extends CrudRepository<JobOffer, Long> {
+public interface OffersRepository extends PagingAndSortingRepository<JobOffer, Long> {
 
-    List<JobOffer> findAllByTitle(String title);
+    Page<JobOffer> findAllByTitle(Pageable pageable, String title);
 
-    List<JobOffer> findAllByCompanyName(String companyName);
+    Page<JobOffer> findAllByCompanyName(Pageable pageable, String companyName);
 }

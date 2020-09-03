@@ -1,18 +1,20 @@
 package com.mkosc.jobs.controller;
 
 import com.mkosc.jobs.domain.JobOffer;
-import com.mkosc.jobs.dto.JobOfferSearchDTO;
+import com.mkosc.jobs.exception.JobOfferNotFoundException;
 import com.mkosc.jobs.service.OffersService;
-import org.modelmapper.ModelMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/offers")
 public class OffersController {
@@ -20,34 +22,29 @@ public class OffersController {
     @Autowired
     OffersService offersService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     @GetMapping("/{id}")
     public ResponseEntity<JobOffer> getOfferById(@PathVariable long id) {
-        return new ResponseEntity<>(offersService.getOfferById(id), HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(offersService.getOfferById(id), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            log.error("Offer with id {} not found", id);
+            throw new JobOfferNotFoundException();
+        }
     }
 
     @GetMapping
-    public ResponseEntity<List<JobOffer>> getAllOffers() {
-        return new ResponseEntity<>(offersService.getAllOffers(), HttpStatus.OK);
+    public ResponseEntity<Page<JobOffer>> getAllOffers(Pageable pageable) {
+        return new ResponseEntity<>(offersService.getAllOffers(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> getOffersByTitle(@RequestParam(name = "title", required = false) String title,
+    public ResponseEntity<?> getOffersByTitleOrCompanyName(Pageable pageable,
+                                              @RequestParam(name = "title", required = false) String title,
                                               @RequestParam(name = "companyName", required = false) String companyName) {
         if (title != null) {
-            List<JobOfferSearchDTO> jobOfferSearchDTOs = offersService.getOffersByTitle(title)
-                    .stream()
-                    .map(offer -> modelMapper.map(offer, JobOfferSearchDTO.class))
-                    .collect(Collectors.toList());
-            return new ResponseEntity<>(jobOfferSearchDTOs, HttpStatus.OK);
+            return new ResponseEntity<>(offersService.getOffersByTitle(pageable, title), HttpStatus.OK);
         } else if (companyName != null) {
-            List<JobOfferSearchDTO> jobOfferSearchDTOs = offersService.getOffersByCompanyName(companyName)
-                    .stream()
-                    .map(offer -> modelMapper.map(offer, JobOfferSearchDTO.class))
-                    .collect(Collectors.toList());
-            return new ResponseEntity<>(jobOfferSearchDTOs, HttpStatus.OK);
+            return new ResponseEntity<>(offersService.getOffersByCompanyName(pageable, companyName), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -60,12 +57,22 @@ public class OffersController {
 
     @PutMapping("/{id}")
     public ResponseEntity<JobOffer> updateOffer(@PathVariable long id, @RequestBody @Valid JobOffer jobOffer) {
-        return new ResponseEntity<>(offersService.updateOffer(id, jobOffer), HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(offersService.updateOffer(id, jobOffer), HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            log.error("Offer with id {} not found", id);
+            throw new JobOfferNotFoundException();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOfferById(@PathVariable long id) {
-        offersService.deleteOfferById(id);
-        return ResponseEntity.ok("{}");
+        try {
+            offersService.deleteOfferById(id);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            log.error("Offer with id {} not found", id);
+            throw new JobOfferNotFoundException();
+        }
     }
 }

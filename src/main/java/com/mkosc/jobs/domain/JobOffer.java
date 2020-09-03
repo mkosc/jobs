@@ -10,7 +10,7 @@ import javax.validation.constraints.NotBlank;
 public class JobOffer {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long offerId;
     @NotBlank
     private String title;

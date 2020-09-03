@@ -1,12 +1,15 @@
 package com.mkosc.jobs.service;
 
 import com.mkosc.jobs.domain.JobOffer;
+import com.mkosc.jobs.dto.JobOfferSearchDTO;
 import com.mkosc.jobs.repository.OffersRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.List;
 
 @Service
 public class OffersService {
@@ -14,20 +17,25 @@ public class OffersService {
     @Autowired
     OffersRepository offersRepository;
 
-    public List<JobOffer> getAllOffers() {
-        return (List<JobOffer>) offersRepository.findAll();
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public Page<JobOffer> getAllOffers(Pageable pageable) {
+        return offersRepository.findAll(pageable);
     }
 
     public JobOffer getOfferById(long id) {
         return getOfferByIdIfExist(id);
     }
 
-    public List<JobOffer> getOffersByTitle(String title) {
-        return offersRepository.findAllByTitle(title);
+    public Page<JobOfferSearchDTO> getOffersByTitle(Pageable pageable, String title) {
+        return offersRepository.findAllByTitle(pageable, title)
+                .map(offer -> modelMapper.map(offer, JobOfferSearchDTO.class));
     }
 
-    public List<JobOffer> getOffersByCompanyName(String companyName) {
-        return offersRepository.findAllByCompanyName(companyName);
+    public Page<JobOfferSearchDTO> getOffersByCompanyName(Pageable pageable, String companyName) {
+        return offersRepository.findAllByCompanyName(pageable, companyName)
+                .map(offer -> modelMapper.map(offer, JobOfferSearchDTO.class));
     }
 
     public JobOffer createOffer(JobOffer jobOffer) {
@@ -46,6 +54,6 @@ public class OffersService {
     }
 
     public JobOffer getOfferByIdIfExist(long id) {
-        return offersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Offer with id: " + id + " not found"));
+        return offersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Offer with id " + id + " not found"));
     }
 }
