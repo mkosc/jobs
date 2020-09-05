@@ -29,4 +29,25 @@ public class JobOffer {
     private String location;
     private boolean isRemote;
 
+    public JobOffer withOfferId(long id) {
+        this.offerId = id;
+        return this;
+    }
+
+    public JobOffer withTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public JobOffer withDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public JobOffer withCompanyName(String companyName) {
+        this.companyName = companyName;
+        return this;
+    }
+
+
 }

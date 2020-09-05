@@ -14,4 +14,19 @@ public class JobOfferSearchDTO {
     private ExperienceLevel experienceLevel;
     private String location;
     private boolean isRemote;
+
+    public JobOfferSearchDTO withOfferId(long id) {
+        this.offerId = id;
+        return this;
+    }
+
+    public JobOfferSearchDTO withTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public JobOfferSearchDTO withCompanyName(String companyName) {
+        this.companyName = companyName;
+        return this;
+    }
 }
