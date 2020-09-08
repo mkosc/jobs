@@ -2,11 +2,11 @@ package com.mkosc.jobs.controller;
 
 import com.mkosc.jobs.domain.JobOffer;
 import com.mkosc.jobs.dto.JobOfferDTO;
-import com.mkosc.jobs.exception.ElementNotUpdatableException;
+import com.mkosc.jobs.exception.UpdateFailedValidationException;
 import com.mkosc.jobs.exception.JobOfferNotFoundException;
 import com.mkosc.jobs.service.OffersService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.NotReadablePropertyException;
+import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -69,15 +70,15 @@ public class OffersController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<JobOfferDTO> updateOfferElement(@PathVariable long id, @RequestParam(name="element") String element, @RequestBody @Valid JobOfferDTO jobOfferDTO) {
+    public ResponseEntity<JobOfferDTO> updateOfferElement(@PathVariable long id, @RequestParam(name="element") String element, @RequestBody Map<String, Object> update) {
         try {
-            return new ResponseEntity<>(offersService.updateOfferElement(id, element, jobOfferDTO), HttpStatus.OK);
+            return new ResponseEntity<>(offersService.updateOfferElement(id, element, update), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             log.error("Offer with id {} not found", id);
             throw new JobOfferNotFoundException();
-        } catch (NotReadablePropertyException e) {
-            log.error("Element {} is not updatable", element);
-            throw new ElementNotUpdatableException();
+        } catch (NotWritablePropertyException e) {
+            log.error("Validation failed for element {} and update data {}", element, update);
+            throw new UpdateFailedValidationException();
         }
     }
 

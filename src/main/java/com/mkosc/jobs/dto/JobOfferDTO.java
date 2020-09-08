@@ -19,4 +19,19 @@ public class JobOfferDTO {
     private EmploymentType employmentType;
     private String location;
     private boolean isRemote;
+
+    public JobOfferDTO withTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public JobOfferDTO withDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public JobOfferDTO withCompanyName(String companyName) {
+        this.companyName = companyName;
+        return this;
+    }
 }

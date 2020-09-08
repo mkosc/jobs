@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Map;
 
 @Service
 public class OffersService {
@@ -51,11 +52,10 @@ public class OffersService {
         return offersRepository.save(jobOffer);
     }
 
-    public JobOfferDTO updateOfferElement(long id, String element, JobOfferDTO jobOfferDTO) {
+    public JobOfferDTO updateOfferElement(long id, String element, Map<String, Object> update) {
         JobOffer offerToUpdate = getOfferByIdIfExist(id);
-        PropertyAccessor sourceObjectAccessor = PropertyAccessorFactory.forBeanPropertyAccess(jobOfferDTO);
         PropertyAccessor destinationObjectAccessor = PropertyAccessorFactory.forBeanPropertyAccess(offerToUpdate);
-        destinationObjectAccessor.setPropertyValue(element, sourceObjectAccessor.getPropertyValue(element));
+        destinationObjectAccessor.setPropertyValue(element, update.get(element));
         return modelMapper.map(offersRepository.save(offerToUpdate), JobOfferDTO.class);
     }
 
@@ -64,7 +64,7 @@ public class OffersService {
         offersRepository.deleteById(id);
     }
 
-    public JobOffer getOfferByIdIfExist(long id) {
+    private JobOffer getOfferByIdIfExist(long id) {
         return offersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Offer with id " + id + " not found"));
     }
 }
