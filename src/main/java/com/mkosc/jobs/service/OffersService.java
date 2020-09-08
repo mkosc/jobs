@@ -1,9 +1,12 @@
 package com.mkosc.jobs.service;
 
 import com.mkosc.jobs.domain.JobOffer;
+import com.mkosc.jobs.dto.JobOfferDTO;
 import com.mkosc.jobs.dto.JobOfferSearchDTO;
 import com.mkosc.jobs.repository.OffersRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +49,14 @@ public class OffersService {
         getOfferByIdIfExist(id);
         jobOffer.setOfferId(id);
         return offersRepository.save(jobOffer);
+    }
+
+    public JobOfferDTO updateOfferElement(long id, String element, JobOfferDTO jobOfferDTO) {
+        JobOffer offerToUpdate = getOfferByIdIfExist(id);
+        PropertyAccessor sourceObjectAccessor = PropertyAccessorFactory.forBeanPropertyAccess(jobOfferDTO);
+        PropertyAccessor destinationObjectAccessor = PropertyAccessorFactory.forBeanPropertyAccess(offerToUpdate);
+        destinationObjectAccessor.setPropertyValue(element, sourceObjectAccessor.getPropertyValue(element));
+        return modelMapper.map(offersRepository.save(offerToUpdate), JobOfferDTO.class);
     }
 
     public void deleteOfferById(long id) {
